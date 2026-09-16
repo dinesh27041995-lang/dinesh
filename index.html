@@ -6,109 +6,96 @@
 <title>Site Safety 360</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family:Arial,sans-serif;
-}
-body{
-  background:#f3f6f8;
-  color:#1f2937;
-}
-header{
-  background:#123b5d;
-  color:white;
-  padding:22px;
-  text-align:center;
-}
-header h1{font-size:30px;}
-header p{margin-top:7px;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f6f8;color:#1f2937}
+header{background:#123b5d;color:#fff;padding:22px;text-align:center}
+header h1{font-size:30px}
+header p{margin-top:7px}
+.container{max-width:1150px;margin:auto;padding:25px}
+.title{text-align:center;margin:20px 0 30px}
 
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:25px;
+.site-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.site,.card,.form-box,.records-box{
+  background:#fff;border-radius:15px;
+  box-shadow:0 4px 14px rgba(0,0,0,.09)
 }
-.title{
-  text-align:center;
-  margin:20px 0 30px;
-}
-.site-grid,.menu-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
-}
-.site{
-  background:white;
-  padding:35px;
-  text-align:center;
-  border-radius:15px;
-  box-shadow:0 4px 14px rgba(0,0,0,.1);
-}
-.site h2{
-  font-size:32px;
-  color:#123b5d;
-}
-.site p{margin:12px 0 22px;}
+.site{padding:35px;text-align:center}
+.site h2{font-size:32px;color:#123b5d}
+.site p{margin:12px 0 22px}
 
 button{
-  background:#f5a623;
-  border:0;
-  padding:13px 25px;
-  border-radius:8px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
+  background:#f5a623;border:0;padding:13px 24px;border-radius:8px;
+  font-size:16px;font-weight:bold;cursor:pointer
 }
-button:hover{background:#e69610;}
+button:hover{opacity:.9}
 
-#dashboard{display:none;}
-
-.back{
-  margin-bottom:20px;
-  background:#123b5d;
-  color:white;
-}
+#dashboard,#observationPage{display:none}
+.back{background:#123b5d;color:#fff;margin-bottom:20px}
 
 .dashboard-title{
-  background:white;
-  border-radius:12px;
-  padding:20px;
-  margin-bottom:20px;
-  text-align:center;
-  box-shadow:0 3px 10px rgba(0,0,0,.08);
+  background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;
+  text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.08)
 }
 
-.menu-grid{
-  grid-template-columns:repeat(3,1fr);
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{padding:28px 15px;text-align:center;cursor:pointer}
+.card:hover{transform:translateY(-2px)}
+.icon{font-size:36px}
+.card h3{margin-top:10px;color:#123b5d}
+.card p{margin-top:4px}
+
+.form-box{padding:25px}
+.form-box h2{color:#123b5d;margin-bottom:20px}
+
+.form-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:18px
 }
-.menu{
-  background:white;
-  padding:25px 15px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 3px 10px rgba(0,0,0,.08);
-  cursor:pointer;
+.field label{display:block;font-weight:bold;margin-bottom:7px}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px;border:1px solid #cbd5e1;
+  border-radius:8px;font-size:15px;background:#fff
 }
-.menu .icon{font-size:35px;}
-.menu h3{
-  margin-top:10px;
-  color:#123b5d;
+.field textarea{min-height:100px;resize:vertical}
+.full{grid-column:1/-1}
+
+.save-btn{background:#16803c;color:white;margin-top:20px}
+.clear-btn{background:#6b7280;color:white;margin-top:20px;margin-left:8px}
+
+.preview{
+  max-width:180px;max-height:150px;margin-top:10px;
+  border-radius:8px;display:none;border:1px solid #ddd
+}
+
+.records-box{padding:25px;margin-top:25px}
+.records-box h2{color:#123b5d;margin-bottom:15px}
+.record{
+  border-left:5px solid #f5a623;background:#f8fafc;
+  padding:15px;margin:12px 0;border-radius:8px
+}
+.record.closed{border-left-color:#16a34a}
+.record-top{
+  display:flex;justify-content:space-between;gap:10px;
+  flex-wrap:wrap;margin-bottom:8px
+}
+.badge{
+  padding:4px 10px;border-radius:20px;font-size:13px;
+  font-weight:bold;background:#fee2e2;color:#991b1b
+}
+.badge.closed{background:#dcfce7;color:#166534}
+.record p{margin:5px 0}
+.delete-btn{
+  background:#b91c1c;color:#fff;padding:7px 12px;
+  font-size:13px;margin-top:8px
 }
 
 footer{
-  text-align:center;
-  background:#123b5d;
-  color:white;
-  padding:15px;
-  margin-top:35px;
+  text-align:center;background:#123b5d;color:white;
+  padding:15px;margin-top:35px
 }
 
 @media(max-width:700px){
-  .site-grid,.menu-grid{
-    grid-template-columns:1fr;
-  }
+  .site-grid,.menu-grid,.form-grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
 }
 </style>
 </head>
@@ -122,125 +109,353 @@ footer{
 
 <div class="container">
 
-  <div id="home">
+<div id="home">
+  <div class="title">
+    <h2>Safety Management System</h2>
+    <p>Select Project Site</p>
+  </div>
 
-    <div class="title">
-      <h2>Safety Management System</h2>
-      <p>Select Project Site</p>
+  <div class="site-grid">
+    <div class="site">
+      <h2>PR2</h2>
+      <p>Project Safety Management</p>
+      <button onclick="openSite('PR2')">ENTER PR2</button>
     </div>
 
-    <div class="site-grid">
+    <div class="site">
+      <h2>PR3</h2>
+      <p>Project Safety Management</p>
+      <button onclick="openSite('PR3')">ENTER PR3</button>
+    </div>
+  </div>
+</div>
 
-      <div class="site">
-        <h2>PR2</h2>
-        <p>Project Safety Management</p>
-        <button onclick="openSite('PR2')">
-          ENTER PR2
-        </button>
-      </div>
+<div id="dashboard">
 
-      <div class="site">
-        <h2>PR3</h2>
-        <p>Project Safety Management</p>
-        <button onclick="openSite('PR3')">
-          ENTER PR3
-        </button>
-      </div>
+  <button class="back" onclick="goHome()">← Back to Site Selection</button>
 
+  <div class="dashboard-title">
+    <h2 id="siteName">Safety Dashboard</h2>
+    <p>Site Safety Management & Monitoring</p>
+  </div>
+
+  <div class="menu-grid">
+
+    <div class="card">
+      <div class="icon">📋</div>
+      <h3>Permit To Work</h3>
+      <p>PTW Apply & Close</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🔍</div>
+      <h3>Safety Inspection</h3>
+      <p>Daily Site Inspection</p>
+    </div>
+
+    <div class="card" onclick="openObservation()">
+      <div class="icon">⚠️</div>
+      <h3>Safety Observation</h3>
+      <p>Finding & Action Taken</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">👷</div>
+      <h3>Toolbox Meeting</h3>
+      <p>TBM Records</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🪜</div>
+      <h3>Equipment Inspection</h3>
+      <p>Ladder / Scaffold / MCWP</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h3>Safety Training</h3>
+      <p>Training & Attendance</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">📷</div>
+      <h3>Before / After</h3>
+      <p>Rectification Photos</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🚨</div>
+      <h3>Incident / Near Miss</h3>
+      <p>Incident Records</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">📊</div>
+      <h3>HSQE Reports</h3>
+      <p>Daily / Weekly / Monthly</p>
     </div>
 
   </div>
+</div>
 
-  <div id="dashboard">
+<div id="observationPage">
 
-    <button class="back" onclick="goHome()">
-      ← Back to Site Selection
+  <button class="back" onclick="backDashboard()">← Back to Dashboard</button>
+
+  <div class="form-box">
+
+    <h2>⚠️ <span id="obsSite"></span> Safety Observation</h2>
+
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="obsDate">
+      </div>
+
+      <div class="field">
+        <label>Location / Level</label>
+        <input type="text" id="location"
+        placeholder="Example: Level 3">
+      </div>
+
+      <div class="field">
+        <label>Subcontractor / Company</label>
+        <input type="text" id="company"
+        placeholder="Company name">
+      </div>
+
+      <div class="field">
+        <label>Risk Category</label>
+        <select id="category">
+          <option>PPE</option>
+          <option>Work at Height</option>
+          <option>Housekeeping</option>
+          <option>Electrical</option>
+          <option>Barricade</option>
+          <option>Lifting</option>
+          <option>Equipment</option>
+          <option>Environmental</option>
+          <option>Fire Safety</option>
+          <option>Others</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label>Observation / Finding</label>
+        <textarea id="finding"
+        placeholder="Enter safety observation..."></textarea>
+      </div>
+
+      <div class="field full">
+        <label>Action Taken / Rectification</label>
+        <textarea id="action"
+        placeholder="Enter action taken..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <select id="status">
+          <option>Open</option>
+          <option>Closed</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Responsible Person</label>
+        <input type="text" id="responsible"
+        placeholder="Name">
+      </div>
+
+      <div class="field">
+        <label>Before Photo</label>
+        <input type="file" accept="image/*"
+        onchange="previewPhoto(this,'beforePreview')">
+        <img id="beforePreview" class="preview">
+      </div>
+
+      <div class="field">
+        <label>After Photo</label>
+        <input type="file" accept="image/*"
+        onchange="previewPhoto(this,'afterPreview')">
+        <img id="afterPreview" class="preview">
+      </div>
+
+    </div>
+
+    <button class="save-btn" onclick="saveObservation()">
+      💾 Save Observation
     </button>
 
-    <div class="dashboard-title">
-      <h2 id="siteName">PR2 Safety Dashboard</h2>
-      <p>Site Safety Management & Monitoring</p>
-    </div>
+    <button class="clear-btn" onclick="clearForm()">
+      Clear
+    </button>
 
-    <div class="menu-grid">
+  </div>
 
-      <div class="menu">
-        <div class="icon">📋</div>
-        <h3>Permit To Work</h3>
-        <p>PTW Apply & Close</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">🔍</div>
-        <h3>Safety Inspection</h3>
-        <p>Daily Site Inspection</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">⚠️</div>
-        <h3>Safety Observation</h3>
-        <p>Finding & Action Taken</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">👷</div>
-        <h3>Toolbox Meeting</h3>
-        <p>TBM Records</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">🪜</div>
-        <h3>Equipment Inspection</h3>
-        <p>Ladder / Scaffold / MCWP</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">🎓</div>
-        <h3>Safety Training</h3>
-        <p>Training & Attendance</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">📷</div>
-        <h3>Before / After</h3>
-        <p>Rectification Photos</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">🚨</div>
-        <h3>Incident / Near Miss</h3>
-        <p>Incident Records</p>
-      </div>
-
-      <div class="menu">
-        <div class="icon">📊</div>
-        <h3>HSQE Reports</h3>
-        <p>Daily / Weekly / Monthly</p>
-      </div>
-
-    </div>
-
+  <div class="records-box">
+    <h2>Saved Observations</h2>
+    <div id="records"></div>
   </div>
 
 </div>
 
+</div>
+
 <footer>
-  Site Safety 360 | Shinkhai Construction Pte Ltd
+Site Safety 360 | Shinkhai Construction Pte Ltd
 </footer>
 
 <script>
+let currentSite="";
+
+document.getElementById("obsDate").value =
+new Date().toISOString().split("T")[0];
+
 function openSite(site){
+  currentSite=site;
   document.getElementById("home").style.display="none";
+  document.getElementById("observationPage").style.display="none";
   document.getElementById("dashboard").style.display="block";
-  document.getElementById("siteName").innerText =
-    site + " Safety Dashboard";
+  document.getElementById("siteName").innerText=
+  site+" Safety Dashboard";
   window.scrollTo(0,0);
 }
 
 function goHome(){
+  currentSite="";
   document.getElementById("dashboard").style.display="none";
+  document.getElementById("observationPage").style.display="none";
   document.getElementById("home").style.display="block";
   window.scrollTo(0,0);
+}
+
+function openObservation(){
+  document.getElementById("dashboard").style.display="none";
+  document.getElementById("observationPage").style.display="block";
+  document.getElementById("obsSite").innerText=currentSite;
+  loadObservations();
+  window.scrollTo(0,0);
+}
+
+function backDashboard(){
+  document.getElementById("observationPage").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+  window.scrollTo(0,0);
+}
+
+function previewPhoto(input,id){
+  if(input.files && input.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const img=document.getElementById(id);
+      img.src=e.target.result;
+      img.style.display="block";
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function saveObservation(){
+
+  const finding=document.getElementById("finding").value.trim();
+
+  if(!finding){
+    alert("Please enter Observation / Finding.");
+    return;
+  }
+
+  const observation={
+    id:Date.now(),
+    date:document.getElementById("obsDate").value,
+    location:document.getElementById("location").value,
+    company:document.getElementById("company").value,
+    category:document.getElementById("category").value,
+    finding:finding,
+    action:document.getElementById("action").value,
+    status:document.getElementById("status").value,
+    responsible:document.getElementById("responsible").value
+  };
+
+  const key="safety360_"+currentSite+"_observations";
+  const data=JSON.parse(localStorage.getItem(key)||"[]");
+
+  data.unshift(observation);
+
+  localStorage.setItem(key,JSON.stringify(data));
+
+  alert("Observation saved successfully.");
+
+  clearForm();
+  loadObservations();
+}
+
+function loadObservations(){
+
+  const key="safety360_"+currentSite+"_observations";
+  const data=JSON.parse(localStorage.getItem(key)||"[]");
+  const box=document.getElementById("records");
+
+  if(data.length===0){
+    box.innerHTML="<p>No observations saved yet.</p>";
+    return;
+  }
+
+  box.innerHTML=data.map(item=>`
+    <div class="record ${item.status==="Closed"?"closed":""}">
+      <div class="record-top">
+        <strong>${item.date || "-"}</strong>
+        <span class="badge ${item.status==="Closed"?"closed":""}">
+          ${item.status}
+        </span>
+      </div>
+
+      <p><strong>Location:</strong> ${escapeHtml(item.location)}</p>
+      <p><strong>Company:</strong> ${escapeHtml(item.company)}</p>
+      <p><strong>Category:</strong> ${escapeHtml(item.category)}</p>
+      <p><strong>Finding:</strong> ${escapeHtml(item.finding)}</p>
+      <p><strong>Action:</strong> ${escapeHtml(item.action)}</p>
+      <p><strong>Responsible:</strong> ${escapeHtml(item.responsible)}</p>
+
+      <button class="delete-btn"
+      onclick="deleteObservation(${item.id})">
+      Delete
+      </button>
+    </div>
+  `).join("");
+}
+
+function deleteObservation(id){
+
+  if(!confirm("Delete this observation?")) return;
+
+  const key="safety360_"+currentSite+"_observations";
+  let data=JSON.parse(localStorage.getItem(key)||"[]");
+
+  data=data.filter(item=>item.id!==id);
+
+  localStorage.setItem(key,JSON.stringify(data));
+
+  loadObservations();
+}
+
+function clearForm(){
+
+  document.getElementById("location").value="";
+  document.getElementById("company").value="";
+  document.getElementById("finding").value="";
+  document.getElementById("action").value="";
+  document.getElementById("responsible").value="";
+  document.getElementById("status").value="Open";
+
+  document.getElementById("beforePreview").style.display="none";
+  document.getElementById("afterPreview").style.display="none";
+}
+
+function escapeHtml(text){
+  const div=document.createElement("div");
+  div.textContent=text || "-";
+  return div.innerHTML;
 }
 </script>
 
