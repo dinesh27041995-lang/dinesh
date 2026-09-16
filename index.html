@@ -36,13 +36,31 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <div class="card" onclick="openTBM()"><div class="icon">👷</div><h3>Toolbox Meeting</h3><p>TBM Records</p></div>
 <div class="card" onclick="openEQ()"><div class="icon">🪜</div><h3>Equipment Inspection</h3><p>Ladder / Scaffold / MCWP</p></div>
 <div class="card" onclick="openTraining()"><div class="icon">🎓</div><h3>Safety Training</h3><p>Training & Attendance</p></div>
-<div class="card"><div class="icon">📷</div><h3>Before / After</h3><p>Rectification Photos</p></div>
+<div class="card" onclick="openBA()"><div class="icon">📷</div><h3>Before / After</h3><p>Rectification Photos</p></div>
 <div class="card"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
 <div class="card"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
 </div></section>
 
 
-<section id="trainingPage" style="display:none">
+<section id="baPage" style="display:none">
+<button class="blue" onclick="backBA()">← Back to Dashboard</button>
+<div class="panel"><h2 id="baTitle">📷 Before / After Rectification</h2>
+<input type="hidden" id="baEditId">
+<div class="form-grid">
+<div><label>Rectification No.</label><input id="baNo" readonly></div>
+<div><label>Date</label><input type="date" id="baDate"></div>
+<div><label>Location / Level</label><input id="baLocation" placeholder="Example: Level 3"></div>
+<div><label>Subcontractor / Company</label><input id="baCompany"></div>
+<div><label>Category</label><select id="baCategory"><option>Housekeeping</option><option>PPE</option><option>Work at Height</option><option>Electrical</option><option>Barricade</option><option>Equipment</option><option>Fire Safety</option><option>Environmental</option><option>Other</option></select></div>
+<div><label>Status</label><select id="baStatus"><option>Open</option><option>Closed</option></select></div>
+<div class="full"><label>Finding / Before Condition</label><textarea id="baFinding"></textarea></div>
+<div class="full"><label>Rectification / Action Taken</label><textarea id="baAction"></textarea></div>
+<div><label>Before Photo</label><input type="file" id="baBeforeFile" accept="image/*" onchange="readBAPhoto(this,'before')"><img id="baBeforePreview" class="preview"></div>
+<div><label>After Photo</label><input type="file" id="baAfterFile" accept="image/*" onchange="readBAPhoto(this,'after')"><img id="baAfterPreview" class="preview"></div>
+</div>
+<p><button class="green" onclick="saveBA()">💾 Save Rectification</button><button class="grey" onclick="clearBA()">Clear Form</button></p>
+</div><div class="panel"><h2>📋 Saved Rectifications</h2><div id="baRecords"></div></div>
+</section><section id="trainingPage" style="display:none">
 <button class="blue" onclick="backTraining()">← Back to Dashboard</button>
 <div class="panel"><h2 id="trainingTitle">🎓 Safety Training</h2>
 <input type="hidden" id="trEditId">
@@ -150,6 +168,19 @@ function toggle(id){let a=data(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].
 function del(id){if(!confirm("Delete this record?"))return;localStorage.setItem(key(),JSON.stringify(data().filter(x=>x.id!==id)));loadRecords()}
 function clearForm(){$("editId").value="";$("recordNo").value=nextNo();$("date").value=new Date().toISOString().split("T")[0];["person","location","company","finding","action","targetDate"].forEach(x=>$(x).value="");$("category").value="PPE";$("status").value="Open";$("beforeFile").value="";$("afterFile").value="";beforePhoto="";afterPhoto="";show("beforePreview","");show("afterPreview","")}
 
+let baBefore="",baAfter="";
+function baKey(){return "safety360_"+currentSite+"_beforeafter"}function baData(){try{return JSON.parse(localStorage.getItem(baKey())||"[]")}catch(e){return[]}}
+function nextBA(){let max=0;baData().forEach(x=>{let m=(x.no||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-REC-"+String(max+1).padStart(3,"0")}
+function openBA(){$("dashboard").style.display="none";$("baPage").style.display="block";$("baTitle").textContent="📷 "+currentSite+" Before / After Rectification";clearBA();loadBA();scrollTo(0,0)}
+function backBA(){$("baPage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
+function readBAPhoto(input,type){if(!input.files[0])return;let r=new FileReader();r.onload=e=>{if(type==="before"){baBefore=e.target.result;show("baBeforePreview",baBefore)}else{baAfter=e.target.result;show("baAfterPreview",baAfter)}};r.readAsDataURL(input.files[0])}
+function clearBA(){$("baEditId").value="";$("baNo").value=nextBA();$("baDate").value=new Date().toISOString().split("T")[0];["baLocation","baCompany","baFinding","baAction"].forEach(x=>$(x).value="");$("baCategory").value="Housekeeping";$("baStatus").value="Open";$("baBeforeFile").value="";$("baAfterFile").value="";baBefore="";baAfter="";show("baBeforePreview","");show("baAfterPreview","")}
+function saveBA(){if(!$("baFinding").value.trim()){alert("Please enter the finding.");return}let a=baData(),eid=$("baEditId").value,r={id:eid?+eid:Date.now(),no:$("baNo").value,date:$("baDate").value,location:$("baLocation").value,company:$("baCompany").value,category:$("baCategory").value,status:$("baStatus").value,finding:$("baFinding").value.trim(),action:$("baAction").value,before:baBefore,after:baAfter};if(eid){let n=a.findIndex(x=>x.id===+eid);if(n>=0)a[n]=r}else a.unshift(r);try{localStorage.setItem(baKey(),JSON.stringify(a));alert(eid?"Rectification updated successfully.":"Rectification saved successfully.");clearBA();loadBA()}catch(e){alert("Storage is full. Use smaller photos or delete old records.")}}
+function loadBA(){let a=baData();$("baRecords").innerHTML=a.length?a.map(r=>`<div class="record ${r.status==="Closed"?"closed":""}"><div class="top"><span class="num">${safe(r.no)}</span><span class="badge">${safe(r.status)}</span></div><p><b>Date:</b> ${safe(r.date)}</p><p><b>Location:</b> ${safe(r.location)}</p><p><b>Company:</b> ${safe(r.company)}</p><p><b>Category:</b> ${safe(r.category)}</p><p><b>Finding:</b> ${safe(r.finding)}</p><p><b>Rectification:</b> ${safe(r.action)}</p>${baPhotos(r)}<p><button class="orange" onclick="editBA(${r.id})">✏️ Edit</button><button class="green" onclick="toggleBA(${r.id})">${r.status==="Closed"?"↩ Reopen":"✓ Close"}</button><button class="red" onclick="deleteBA(${r.id})">🗑 Delete</button></p></div>`).join(""):"<p>No rectification records saved yet.</p>"}
+function baPhotos(r){return `<div class="photos"><div><b>Before Photo</b>${r.before?`<img src="${r.before}">`:"<p>No photo</p>"}</div><div><b>After Photo</b>${r.after?`<img src="${r.after}">`:"<p>No photo</p>"}</div></div>`}
+function editBA(id){let r=baData().find(x=>x.id===id);if(!r)return;$("baEditId").value=r.id;$("baNo").value=r.no;$("baDate").value=r.date;$("baLocation").value=r.location||"";$("baCompany").value=r.company||"";$("baCategory").value=r.category||"Other";$("baStatus").value=r.status||"Open";$("baFinding").value=r.finding||"";$("baAction").value=r.action||"";baBefore=r.before||"";baAfter=r.after||"";show("baBeforePreview",baBefore);show("baAfterPreview",baAfter);scrollTo({top:0,behavior:"smooth"})}
+function toggleBA(id){let a=baData(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].status=a[n].status==="Closed"?"Open":"Closed";localStorage.setItem(baKey(),JSON.stringify(a));loadBA()}
+function deleteBA(id){if(!confirm("Delete this rectification record?"))return;localStorage.setItem(baKey(),JSON.stringify(baData().filter(x=>x.id!==id)));loadBA()}
 let trainingPhoto="";
 function trainingKey(){return "safety360_"+currentSite+"_training"}
 function trainingData(){try{return JSON.parse(localStorage.getItem(trainingKey())||"[]")}catch(e){return[]}}
