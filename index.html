@@ -35,14 +35,34 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <div class="card" onclick="openModule('observation')"><div class="icon">⚠️</div><h3>Safety Observation</h3><p>Finding & Action Taken</p></div>
 <div class="card" onclick="openTBM()"><div class="icon">👷</div><h3>Toolbox Meeting</h3><p>TBM Records</p></div>
 <div class="card" onclick="openEQ()"><div class="icon">🪜</div><h3>Equipment Inspection</h3><p>Ladder / Scaffold / MCWP</p></div>
-<div class="card"><div class="icon">🎓</div><h3>Safety Training</h3><p>Training & Attendance</p></div>
+<div class="card" onclick="openTraining()"><div class="icon">🎓</div><h3>Safety Training</h3><p>Training & Attendance</p></div>
 <div class="card"><div class="icon">📷</div><h3>Before / After</h3><p>Rectification Photos</p></div>
 <div class="card"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
 <div class="card"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
 </div></section>
 
 
-<section id="eqPage" style="display:none">
+<section id="trainingPage" style="display:none">
+<button class="blue" onclick="backTraining()">← Back to Dashboard</button>
+<div class="panel"><h2 id="trainingTitle">🎓 Safety Training</h2>
+<input type="hidden" id="trEditId">
+<div class="form-grid">
+<div><label>Training No.</label><input id="trNo" readonly></div>
+<div><label>Date</label><input type="date" id="trDate"></div>
+<div><label>Time</label><input type="time" id="trTime"></div>
+<div><label>Location</label><input id="trLocation"></div>
+<div><label>Training Topic</label><select id="trTopic"><option>Heat Stress Awareness</option><option>Work at Height Injuries Awareness</option><option>Ladder 3-Point Contact</option><option>Pinch Point Injury Awareness</option><option>Emergency Chemical Spillage</option><option>Fire Drill Management</option><option>Lifting Safety</option><option>Electrical Safety</option><option>5S Construction Housekeeping</option><option>First Aid Awareness</option><option>Workplace Hazard Identification</option><option>Other</option></select></div>
+<div><label>Trainer / Conducted By</label><input id="trTrainer"></div>
+<div><label>Company / Subcontractor</label><input id="trCompany"></div>
+<div><label>No. of Workers</label><input type="number" min="0" id="trWorkers"></div>
+<div class="full"><label>Training Details / Key Points</label><textarea id="trPoints"></textarea></div>
+<div class="full"><label>Attendance / Worker Names</label><textarea id="trAttendance"></textarea></div>
+<div><label>Training Photo</label><input type="file" id="trPhotoFile" accept="image/*" onchange="readTrainingPhoto(this)"><img id="trPhotoPreview" class="preview"></div>
+</div>
+<p><button class="green" onclick="saveTraining()">💾 Save Training</button><button class="grey" onclick="clearTraining()">Clear Form</button></p>
+</div>
+<div class="panel"><h2>📋 Saved Training Records</h2><div id="trainingRecords"></div></div>
+</section><section id="eqPage" style="display:none">
 <button class="blue" onclick="backEQ()">← Back to Dashboard</button>
 <div class="panel"><h2 id="eqTitle">🪜 Equipment Inspection</h2>
 <input type="hidden" id="eqEditId">
@@ -130,6 +150,18 @@ function toggle(id){let a=data(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].
 function del(id){if(!confirm("Delete this record?"))return;localStorage.setItem(key(),JSON.stringify(data().filter(x=>x.id!==id)));loadRecords()}
 function clearForm(){$("editId").value="";$("recordNo").value=nextNo();$("date").value=new Date().toISOString().split("T")[0];["person","location","company","finding","action","targetDate"].forEach(x=>$(x).value="");$("category").value="PPE";$("status").value="Open";$("beforeFile").value="";$("afterFile").value="";beforePhoto="";afterPhoto="";show("beforePreview","");show("afterPreview","")}
 
+let trainingPhoto="";
+function trainingKey(){return "safety360_"+currentSite+"_training"}
+function trainingData(){try{return JSON.parse(localStorage.getItem(trainingKey())||"[]")}catch(e){return[]}}
+function nextTraining(){let max=0;trainingData().forEach(x=>{let m=(x.no||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-TRN-"+String(max+1).padStart(3,"0")}
+function openTraining(){$("dashboard").style.display="none";$("trainingPage").style.display="block";$("trainingTitle").textContent="🎓 "+currentSite+" Safety Training";clearTraining();loadTraining();scrollTo(0,0)}
+function backTraining(){$("trainingPage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
+function readTrainingPhoto(input){if(!input.files[0])return;let r=new FileReader();r.onload=e=>{trainingPhoto=e.target.result;show("trPhotoPreview",trainingPhoto)};r.readAsDataURL(input.files[0])}
+function clearTraining(){$("trEditId").value="";$("trNo").value=nextTraining();$("trDate").value=new Date().toISOString().split("T")[0];["trTime","trLocation","trTrainer","trCompany","trWorkers","trPoints","trAttendance"].forEach(x=>$(x).value="");$("trTopic").value="Heat Stress Awareness";$("trPhotoFile").value="";trainingPhoto="";show("trPhotoPreview","")}
+function saveTraining(){if(!$("trPoints").value.trim()){alert("Please enter training details / key points.");return}let a=trainingData(),eid=$("trEditId").value,r={id:eid?+eid:Date.now(),no:$("trNo").value,date:$("trDate").value,time:$("trTime").value,location:$("trLocation").value,topic:$("trTopic").value,trainer:$("trTrainer").value,company:$("trCompany").value,workers:$("trWorkers").value,points:$("trPoints").value.trim(),attendance:$("trAttendance").value,photo:trainingPhoto};if(eid){let n=a.findIndex(x=>x.id===+eid);if(n>=0)a[n]=r}else a.unshift(r);try{localStorage.setItem(trainingKey(),JSON.stringify(a));alert(eid?"Training updated successfully.":"Training saved successfully.");clearTraining();loadTraining()}catch(e){alert("Storage is full. Use a smaller photo or delete old records.")}}
+function loadTraining(){let a=trainingData();$("trainingRecords").innerHTML=a.length?a.map(r=>`<div class="record closed"><div class="top"><span class="num">${safe(r.no)}</span><span class="badge">${safe(r.topic)}</span></div><p><b>Date / Time:</b> ${safe(r.date)} ${safe(r.time)}</p><p><b>Location:</b> ${safe(r.location)}</p><p><b>Trainer:</b> ${safe(r.trainer)}</p><p><b>Company:</b> ${safe(r.company)}</p><p><b>No. of Workers:</b> ${safe(r.workers)}</p><p><b>Key Points:</b> ${safe(r.points)}</p><p><b>Attendance:</b> ${safe(r.attendance)}</p>${r.photo?`<p><b>Training Photo</b></p><img src="${r.photo}" style="max-width:280px;max-height:230px;border-radius:8px">`:""}<p><button class="orange" onclick="editTraining(${r.id})">✏️ Edit</button><button class="red" onclick="deleteTraining(${r.id})">🗑 Delete</button></p></div>`).join(""):"<p>No training records saved yet.</p>"}
+function editTraining(id){let r=trainingData().find(x=>x.id===id);if(!r)return;$("trEditId").value=r.id;$("trNo").value=r.no;$("trDate").value=r.date;$("trTime").value=r.time||"";$("trLocation").value=r.location||"";$("trTopic").value=r.topic||"Other";$("trTrainer").value=r.trainer||"";$("trCompany").value=r.company||"";$("trWorkers").value=r.workers||"";$("trPoints").value=r.points||"";$("trAttendance").value=r.attendance||"";trainingPhoto=r.photo||"";show("trPhotoPreview",trainingPhoto);scrollTo({top:0,behavior:"smooth"})}
+function deleteTraining(id){if(!confirm("Delete this training record?"))return;localStorage.setItem(trainingKey(),JSON.stringify(trainingData().filter(x=>x.id!==id)));loadTraining()}
 let eqBefore="",eqAfter="";
 function eqKey(){return "safety360_"+currentSite+"_equipment"}
 function eqData(){try{return JSON.parse(localStorage.getItem(eqKey())||"[]")}catch(e){return[]}}
