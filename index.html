@@ -19,7 +19,9 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.num{font-weight:bold;color:#123b5d}.badge{font-weight:bold}.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.photos img{width:100%;max-height:220px;object-fit:contain}
 @media(max-width:700px){.grid,.menu-grid,.form-grid,.photos{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
-</head>
+<style id="reportStyles">
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.summary-card{background:#f8fafc;border-radius:12px;padding:18px;text-align:center;border:1px solid #e2e8f0}.summary-card strong{display:block;font-size:28px;color:#123b5d;margin-top:7px}.report-table{width:100%;border-collapse:collapse;margin:12px 0 25px}.report-table th,.report-table td{border:1px solid #cbd5e1;padding:8px;text-align:left}.report-table th{background:#eaf0f5}.report-section h3{color:#123b5d}@media(max-width:700px){.summary-grid{grid-template-columns:1fr}}@media print{header,footer,.no-print{display:none!important}body{background:white}.container{max-width:none;padding:0}.panel{box-shadow:none}.report-table{font-size:11px}}
+</style></head>
 <body>
 <header><h1>🦺 SITE SAFETY 360</h1><p>SHINKHAI CONSTRUCTION PTE LTD</p></header>
 <div class="container">
@@ -38,11 +40,18 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <div class="card" onclick="openTraining()"><div class="icon">🎓</div><h3>Safety Training</h3><p>Training & Attendance</p></div>
 <div class="card" onclick="openBA()"><div class="icon">📷</div><h3>Before / After</h3><p>Rectification Photos</p></div>
 <div class="card" onclick="openIncident()"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
-<div class="card"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
+<div class="card" onclick="openReport()"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
 </div></section>
 
 
-<section id="incidentPage" style="display:none">
+<section id="reportPage" style="display:none">
+<button class="blue no-print" onclick="backReport()">← Back to Dashboard</button>
+<div class="panel"><h2 id="reportTitle">📊 HSQE Reports Dashboard</h2>
+<div class="form-grid no-print"><div><label>From Date</label><input type="date" id="reportFrom"></div><div><label>To Date</label><input type="date" id="reportTo"></div></div>
+<p class="no-print"><button class="green" onclick="buildReport()">Apply Date Filter</button><button class="grey" onclick="clearReportFilter()">Clear Filter</button><button class="blue" onclick="window.print()">🖨 Print / Save PDF</button></p>
+<div id="reportSummary"></div>
+<div id="reportDetails"></div>
+</div></section><section id="incidentPage" style="display:none">
 <button class="blue" onclick="backIncident()">← Back to Dashboard</button>
 <div class="panel"><h2 id="incidentTitle">🚨 Incident / Near Miss</h2><input type="hidden" id="incEditId">
 <div class="form-grid">
@@ -184,6 +193,23 @@ function toggle(id){let a=data(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].
 function del(id){if(!confirm("Delete this record?"))return;localStorage.setItem(key(),JSON.stringify(data().filter(x=>x.id!==id)));loadRecords()}
 function clearForm(){$("editId").value="";$("recordNo").value=nextNo();$("date").value=new Date().toISOString().split("T")[0];["person","location","company","finding","action","targetDate"].forEach(x=>$(x).value="");$("category").value="PPE";$("status").value="Open";$("beforeFile").value="";$("afterFile").value="";beforePhoto="";afterPhoto="";show("beforePreview","");show("afterPreview","")}
 
+function openReport(){$("dashboard").style.display="none";$("reportPage").style.display="block";$("reportTitle").textContent="📊 "+currentSite+" HSQE Reports Dashboard";buildReport();scrollTo(0,0)}
+function backReport(){$("reportPage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
+function clearReportFilter(){$("reportFrom").value="";$("reportTo").value="";buildReport()}
+function readKey(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}}
+function filterDates(a){let f=$("reportFrom").value,t=$("reportTo").value;return a.filter(x=>{let d=x.date||x.ptwDate||"";return (!f||d>=f)&&(!t||d<=t)})}
+function reportSets(){return [
+["Safety Observations",filterDates(readKey("safety360_"+currentSite+"_observation"))],
+["Safety Inspections",filterDates(readKey("safety360_"+currentSite+"_inspection"))],
+["Permit To Work",filterDates(readKey("safety360_"+currentSite+"_ptw"))],
+["Toolbox Meetings",filterDates(readKey("safety360_"+currentSite+"_tbm"))],
+["Equipment Inspections",filterDates(readKey("safety360_"+currentSite+"_equipment"))],
+["Safety Trainings",filterDates(readKey("safety360_"+currentSite+"_training"))],
+["Before / After Rectifications",filterDates(readKey("safety360_"+currentSite+"_beforeafter"))],
+["Incident / Near Miss",filterDates(readKey("safety360_"+currentSite+"_incident"))]
+]}
+function buildReport(){let sets=reportSets(),total=sets.reduce((s,x)=>s+x[1].length,0),open=0,closed=0;sets.forEach(x=>x[1].forEach(r=>{if(r.status==="Open")open++;if(r.status==="Closed")closed++}));$("reportSummary").innerHTML=`<div class="summary-grid"><div class="summary-card">Total Records<strong>${total}</strong></div><div class="summary-card">Open<strong>${open}</strong></div><div class="summary-card">Closed<strong>${closed}</strong></div>${sets.map(x=>`<div class="summary-card">${x[0]}<strong>${x[1].length}</strong></div>`).join("")}</div>`;$("reportDetails").innerHTML=sets.map(x=>reportSection(x[0],x[1])).join("")}
+function reportSection(name,a){if(!a.length)return `<div class="report-section"><h3>${name}</h3><p>No records.</p></div>`;return `<div class="report-section"><h3>${name}</h3><table class="report-table"><thead><tr><th>No.</th><th>Date</th><th>Location / Topic</th><th>Company / Details</th><th>Status</th></tr></thead><tbody>${a.map(r=>`<tr><td>${safe(r.recordNo||r.ptwNo||r.no||r.tbmNo)}</td><td>${safe(r.date)}</td><td>${safe(r.location||r.topic||r.type)}</td><td>${safe(r.company||r.finding||r.activity||r.points||r.description)}</td><td>${safe(r.status||r.result||"-")}</td></tr>`).join("")}</tbody></table></div>`}
 let incidentPhoto="";
 function incKey(){return "safety360_"+currentSite+"_incident"}function incData(){try{return JSON.parse(localStorage.getItem(incKey())||"[]")}catch(e){return[]}}
 function nextInc(){let max=0;incData().forEach(x=>{let m=(x.no||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-INC-"+String(max+1).padStart(3,"0")}
