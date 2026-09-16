@@ -30,7 +30,7 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <section id="dashboard"><button class="blue" onclick="goHome()">← Back to Site Selection</button>
 <div class="panel" style="text-align:center"><h2 id="siteName"></h2><p>Site Safety Management & Monitoring</p></div>
 <div class="menu-grid">
-<div class="card"><div class="icon">📋</div><h3>Permit To Work</h3><p>PTW Apply & Close</p></div>
+<div class="card" onclick="openPTW()"><div class="icon">📋</div><h3>Permit To Work</h3><p>PTW Apply & Close</p></div>
 <div class="card" onclick="openModule('inspection')"><div class="icon">🔍</div><h3>Safety Inspection</h3><p>Daily Site Inspection</p></div>
 <div class="card" onclick="openModule('observation')"><div class="icon">⚠️</div><h3>Safety Observation</h3><p>Finding & Action Taken</p></div>
 <div class="card"><div class="icon">👷</div><h3>Toolbox Meeting</h3><p>TBM Records</p></div>
@@ -40,6 +40,32 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <div class="card"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
 <div class="card"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
 </div></section>
+
+
+<section id="ptwPage" style="display:none">
+<button class="blue" onclick="backFromPTW()">← Back to Dashboard</button>
+<div class="panel">
+<h2 id="ptwTitle">📋 Permit To Work</h2>
+<input type="hidden" id="ptwEditId">
+<div class="form-grid">
+<div><label>PTW No.</label><input id="ptwNo" readonly></div>
+<div><label>Date</label><input type="date" id="ptwDate"></div>
+<div><label>Work Location</label><input id="ptwLocation" placeholder="Example: Level 3"></div>
+<div><label>Subcontractor / Company</label><input id="ptwCompany" placeholder="Company name"></div>
+<div class="full"><label>Work Activity</label><textarea id="ptwActivity" placeholder="Describe work activity"></textarea></div>
+<div><label>Permit Type</label><select id="ptwType"><option>General Work</option><option>Work at Height</option><option>Hot Work</option><option>Lifting Work</option><option>Electrical Work</option><option>Excavation Work</option><option>Confined Space</option><option>Other</option></select></div>
+<div><label>Supervisor</label><input id="ptwSupervisor" placeholder="Supervisor name"></div>
+<div><label>Safety Coordinator / Assessor</label><input id="ptwSafety" placeholder="Name"></div>
+<div><label>Start Time</label><input type="time" id="ptwStart"></div>
+<div><label>End Time</label><input type="time" id="ptwEnd"></div>
+<div><label>TBM Completed</label><select id="ptwTbm"><option>Yes</option><option>No</option></select></div>
+<div><label>WAH Required</label><select id="ptwWah"><option>No</option><option>Yes</option></select></div>
+<div><label>Status</label><select id="ptwStatus"><option>Open</option><option>Closed</option></select></div>
+</div>
+<p><button class="green" onclick="savePTW()">💾 Save PTW</button><button class="grey" onclick="clearPTW()">Clear Form</button></p>
+</div>
+<div class="panel"><h2>📋 Saved PTW Records</h2><div id="ptwRecords"></div></div>
+</section>
 
 <section id="modulePage"><button class="blue" onclick="backDashboard()">← Back to Dashboard</button>
 <div class="panel"><h2 id="moduleTitle"></h2><input type="hidden" id="editId">
@@ -64,7 +90,7 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 let currentSite="",currentModule="",beforePhoto="",afterPhoto="";
 const $=id=>document.getElementById(id);
 function openSite(s){currentSite=s;$("home").style.display="none";$("dashboard").style.display="block";$("siteName").textContent=s+" Safety Dashboard";scrollTo(0,0)}
-function goHome(){$("dashboard").style.display="none";$("home").style.display="block"}
+function goHome(){$("dashboard").style.display="none";$("ptwPage").style.display="none";$("home").style.display="block"}
 function backDashboard(){$("modulePage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
 function config(){return currentModule==="inspection"?{name:"Safety Inspection",prefix:"INS",person:"Inspector Name",finding:"Inspection Finding",action:"Corrective Action"}:{name:"Safety Observation",prefix:"OBS",person:"Responsible Person",finding:"Observation / Finding",action:"Action Taken / Rectification"}}
 function openModule(m){currentModule=m;$("dashboard").style.display="none";$("modulePage").style.display="block";let c=config();$("moduleTitle").textContent=(m==="inspection"?"🔍 ":"⚠️ ")+currentSite+" "+c.name;$("personLabel").textContent=c.person;$("findingLabel").textContent=c.finding;$("actionLabel").textContent=c.action;clearForm();loadRecords();scrollTo(0,0)}
@@ -80,6 +106,19 @@ function editRecord(id){let r=data().find(x=>x.id===id);if(!r)return;$("editId")
 function toggle(id){let a=data(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].status=a[n].status==="Closed"?"Open":"Closed";localStorage.setItem(key(),JSON.stringify(a));loadRecords()}
 function del(id){if(!confirm("Delete this record?"))return;localStorage.setItem(key(),JSON.stringify(data().filter(x=>x.id!==id)));loadRecords()}
 function clearForm(){$("editId").value="";$("recordNo").value=nextNo();$("date").value=new Date().toISOString().split("T")[0];["person","location","company","finding","action","targetDate"].forEach(x=>$(x).value="");$("category").value="PPE";$("status").value="Open";$("beforeFile").value="";$("afterFile").value="";beforePhoto="";afterPhoto="";show("beforePreview","");show("afterPreview","")}
+
+function ptwKey(){return "safety360_"+currentSite+"_ptw"}
+function ptwData(){try{return JSON.parse(localStorage.getItem(ptwKey())||"[]")}catch(e){return[]}}
+function nextPTWNo(){let max=0;ptwData().forEach(x=>{let m=(x.ptwNo||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-PTW-"+String(max+1).padStart(3,"0")}
+function openPTW(){$("dashboard").style.display="none";$("modulePage").style.display="none";$("ptwPage").style.display="block";$("ptwTitle").textContent="📋 "+currentSite+" Permit To Work";clearPTW();loadPTW();scrollTo(0,0)}
+function backFromPTW(){$("ptwPage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
+function clearPTW(){$("ptwEditId").value="";$("ptwNo").value=nextPTWNo();$("ptwDate").value=new Date().toISOString().split("T")[0];["ptwLocation","ptwCompany","ptwActivity","ptwSupervisor","ptwSafety","ptwStart","ptwEnd"].forEach(x=>$(x).value="");$("ptwType").value="General Work";$("ptwTbm").value="Yes";$("ptwWah").value="No";$("ptwStatus").value="Open"}
+function savePTW(){if(!$("ptwActivity").value.trim()){alert("Please enter the work activity.");return}let a=ptwData(),eid=$("ptwEditId").value,r={id:eid?+eid:Date.now(),ptwNo:$("ptwNo").value,date:$("ptwDate").value,location:$("ptwLocation").value,company:$("ptwCompany").value,activity:$("ptwActivity").value.trim(),type:$("ptwType").value,supervisor:$("ptwSupervisor").value,safety:$("ptwSafety").value,start:$("ptwStart").value,end:$("ptwEnd").value,tbm:$("ptwTbm").value,wah:$("ptwWah").value,status:$("ptwStatus").value};if(eid){let n=a.findIndex(x=>x.id===+eid);if(n>=0)a[n]=r}else a.unshift(r);localStorage.setItem(ptwKey(),JSON.stringify(a));alert(eid?"PTW updated successfully.":"PTW saved successfully.");clearPTW();loadPTW()}
+function loadPTW(){let a=ptwData();$("ptwRecords").innerHTML=a.length?a.map(r=>`<div class="record ${r.status==="Closed"?"closed":""}"><div class="top"><span class="num">${safe(r.ptwNo)}</span><span class="badge">${safe(r.status)}</span></div><p><b>Date:</b> ${safe(r.date)}</p><p><b>Location:</b> ${safe(r.location)}</p><p><b>Company:</b> ${safe(r.company)}</p><p><b>Activity:</b> ${safe(r.activity)}</p><p><b>Permit Type:</b> ${safe(r.type)}</p><p><b>Supervisor:</b> ${safe(r.supervisor)}</p><p><b>Safety Coordinator / Assessor:</b> ${safe(r.safety)}</p><p><b>Time:</b> ${safe(r.start)} - ${safe(r.end)}</p><p><b>TBM:</b> ${safe(r.tbm)} &nbsp; <b>WAH:</b> ${safe(r.wah)}</p><p><button class="orange" onclick="editPTW(${r.id})">✏️ Edit</button><button class="green" onclick="togglePTW(${r.id})">${r.status==="Closed"?"↩ Reopen":"✓ Close PTW"}</button><button class="red" onclick="deletePTW(${r.id})">🗑 Delete</button></p></div>`).join(""):"<p>No PTW records saved yet.</p>"}
+function editPTW(id){let r=ptwData().find(x=>x.id===id);if(!r)return;$("ptwEditId").value=r.id;$("ptwNo").value=r.ptwNo;$("ptwDate").value=r.date;$("ptwLocation").value=r.location||"";$("ptwCompany").value=r.company||"";$("ptwActivity").value=r.activity||"";$("ptwType").value=r.type||"General Work";$("ptwSupervisor").value=r.supervisor||"";$("ptwSafety").value=r.safety||"";$("ptwStart").value=r.start||"";$("ptwEnd").value=r.end||"";$("ptwTbm").value=r.tbm||"Yes";$("ptwWah").value=r.wah||"No";$("ptwStatus").value=r.status||"Open";scrollTo({top:0,behavior:"smooth"})}
+function togglePTW(id){let a=ptwData(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].status=a[n].status==="Closed"?"Open":"Closed";localStorage.setItem(ptwKey(),JSON.stringify(a));loadPTW()}
+function deletePTW(id){if(!confirm("Delete this PTW record?"))return;localStorage.setItem(ptwKey(),JSON.stringify(ptwData().filter(x=>x.id!==id)));loadPTW()}
+
 function safe(v){let d=document.createElement("div");d.textContent=v||"-";return d.innerHTML}
 </script>
 </body></html>
