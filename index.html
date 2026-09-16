@@ -3,208 +3,245 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Site Safety 360</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+body{
+  background:#f3f6f8;
+  color:#1f2937;
+}
+header{
+  background:#123b5d;
+  color:white;
+  padding:22px;
+  text-align:center;
+}
+header h1{font-size:30px;}
+header p{margin-top:7px;}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:25px;
+}
+.title{
+  text-align:center;
+  margin:20px 0 30px;
+}
+.site-grid,.menu-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+}
+.site{
+  background:white;
+  padding:35px;
+  text-align:center;
+  border-radius:15px;
+  box-shadow:0 4px 14px rgba(0,0,0,.1);
+}
+.site h2{
+  font-size:32px;
+  color:#123b5d;
+}
+.site p{margin:12px 0 22px;}
+
+button{
+  background:#f5a623;
+  border:0;
+  padding:13px 25px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#e69610;}
+
+#dashboard{display:none;}
+
+.back{
+  margin-bottom:20px;
+  background:#123b5d;
+  color:white;
 }
 
-body {
-    background: #f2f5f7;
+.dashboard-title{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+  text-align:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
 }
 
-.header {
-    background: #123b5d;
-    color: white;
-    padding: 25px;
-    text-align: center;
+.menu-grid{
+  grid-template-columns:repeat(3,1fr);
+}
+.menu{
+  background:white;
+  padding:25px 15px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
+  cursor:pointer;
+}
+.menu .icon{font-size:35px;}
+.menu h3{
+  margin-top:10px;
+  color:#123b5d;
 }
 
-.header h1 {
-    font-size: 32px;
+footer{
+  text-align:center;
+  background:#123b5d;
+  color:white;
+  padding:15px;
+  margin-top:35px;
 }
 
-.header p {
-    margin-top: 8px;
-}
-
-.container {
-    max-width: 1100px;
-    margin: 30px auto;
-    padding: 20px;
-}
-
-.welcome {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.sites {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-}
-
-.site-card {
-    background: white;
-    padding: 35px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.site-card h2 {
-    color: #123b5d;
-    font-size: 30px;
-}
-
-.site-card p {
-    margin: 15px 0 25px;
-    color: #555;
-}
-
-button {
-    background: #f5a623;
-    color: #111;
-    border: none;
-    padding: 13px 30px;
-    border-radius: 8px;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #e59400;
-}
-
-.modules {
-    margin-top: 40px;
-}
-
-.modules h2 {
-    text-align: center;
-    color: #123b5d;
-    margin-bottom: 20px;
-}
-
-.module-grid {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 15px;
-}
-
-.module {
-    background: white;
-    padding: 20px 10px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    font-weight: bold;
-}
-
-.footer {
-    margin-top: 40px;
-    background: #123b5d;
-    color: white;
-    text-align: center;
-    padding: 15px;
-}
-
-@media(max-width:700px) {
-    .sites {
-        grid-template-columns: 1fr;
-    }
-
-    .module-grid {
-        grid-template-columns: repeat(2,1fr);
-    }
+@media(max-width:700px){
+  .site-grid,.menu-grid{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1>🦺 SITE SAFETY 360</h1>
-    <p>SHINKHAI CONSTRUCTION PTE LTD</p>
-</div>
+<header>
+  <h1>🦺 SITE SAFETY 360</h1>
+  <p>SHINKHAI CONSTRUCTION PTE LTD</p>
+</header>
 
 <div class="container">
 
-    <div class="welcome">
-        <h2>Safety Management System</h2>
-        <p>Please select your project site</p>
+  <div id="home">
+
+    <div class="title">
+      <h2>Safety Management System</h2>
+      <p>Select Project Site</p>
     </div>
 
-    <div class="sites">
+    <div class="site-grid">
 
-        <div class="site-card">
-            <h2>PR2</h2>
-            <p>Project Safety Management</p>
-            <button onclick="selectSite('PR2')">
-                ENTER PR2
-            </button>
-        </div>
+      <div class="site">
+        <h2>PR2</h2>
+        <p>Project Safety Management</p>
+        <button onclick="openSite('PR2')">
+          ENTER PR2
+        </button>
+      </div>
 
-        <div class="site-card">
-            <h2>PR3</h2>
-            <p>Project Safety Management</p>
-            <button onclick="selectSite('PR3')">
-                ENTER PR3
-            </button>
-        </div>
+      <div class="site">
+        <h2>PR3</h2>
+        <p>Project Safety Management</p>
+        <button onclick="openSite('PR3')">
+          ENTER PR3
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="dashboard">
+
+    <button class="back" onclick="goHome()">
+      ← Back to Site Selection
+    </button>
+
+    <div class="dashboard-title">
+      <h2 id="siteName">PR2 Safety Dashboard</h2>
+      <p>Site Safety Management & Monitoring</p>
+    </div>
+
+    <div class="menu-grid">
+
+      <div class="menu">
+        <div class="icon">📋</div>
+        <h3>Permit To Work</h3>
+        <p>PTW Apply & Close</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">🔍</div>
+        <h3>Safety Inspection</h3>
+        <p>Daily Site Inspection</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">⚠️</div>
+        <h3>Safety Observation</h3>
+        <p>Finding & Action Taken</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">👷</div>
+        <h3>Toolbox Meeting</h3>
+        <p>TBM Records</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">🪜</div>
+        <h3>Equipment Inspection</h3>
+        <p>Ladder / Scaffold / MCWP</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">🎓</div>
+        <h3>Safety Training</h3>
+        <p>Training & Attendance</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">📷</div>
+        <h3>Before / After</h3>
+        <p>Rectification Photos</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">🚨</div>
+        <h3>Incident / Near Miss</h3>
+        <p>Incident Records</p>
+      </div>
+
+      <div class="menu">
+        <div class="icon">📊</div>
+        <h3>HSQE Reports</h3>
+        <p>Daily / Weekly / Monthly</p>
+      </div>
 
     </div>
 
-    <div class="modules">
-
-        <h2>Safety Modules</h2>
-
-        <div class="module-grid">
-
-            <div class="module">📋 PTW</div>
-
-            <div class="module">🔍 Safety Inspection</div>
-
-            <div class="module">⚠️ Safety Observation</div>
-
-            <div class="module">👷 TBM</div>
-
-            <div class="module">🪜 Equipment Inspection</div>
-
-            <div class="module">🎓 Safety Training</div>
-
-            <div class="module">📷 Before / After</div>
-
-            <div class="module">📊 HSQE Reports</div>
-
-        </div>
-
-    </div>
+  </div>
 
 </div>
 
-<div class="footer">
-    Site Safety 360 | Shinkhai Construction Pte Ltd
-</div>
+<footer>
+  Site Safety 360 | Shinkhai Construction Pte Ltd
+</footer>
 
 <script>
-
-function selectSite(site) {
-
-    alert(
-        "Welcome to " + site +
-        " Site Safety Dashboard"
-    );
-
+function openSite(site){
+  document.getElementById("home").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+  document.getElementById("siteName").innerText =
+    site + " Safety Dashboard";
+  window.scrollTo(0,0);
 }
 
+function goHome(){
+  document.getElementById("dashboard").style.display="none";
+  document.getElementById("home").style.display="block";
+  window.scrollTo(0,0);
+}
 </script>
 
 </body>
