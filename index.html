@@ -37,12 +37,28 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <div class="card" onclick="openEQ()"><div class="icon">🪜</div><h3>Equipment Inspection</h3><p>Ladder / Scaffold / MCWP</p></div>
 <div class="card" onclick="openTraining()"><div class="icon">🎓</div><h3>Safety Training</h3><p>Training & Attendance</p></div>
 <div class="card" onclick="openBA()"><div class="icon">📷</div><h3>Before / After</h3><p>Rectification Photos</p></div>
-<div class="card"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
+<div class="card" onclick="openIncident()"><div class="icon">🚨</div><h3>Incident / Near Miss</h3><p>Incident Records</p></div>
 <div class="card"><div class="icon">📊</div><h3>HSQE Reports</h3><p>Daily / Weekly / Monthly</p></div>
 </div></section>
 
 
-<section id="baPage" style="display:none">
+<section id="incidentPage" style="display:none">
+<button class="blue" onclick="backIncident()">← Back to Dashboard</button>
+<div class="panel"><h2 id="incidentTitle">🚨 Incident / Near Miss</h2><input type="hidden" id="incEditId">
+<div class="form-grid">
+<div><label>Incident No.</label><input id="incNo" readonly></div><div><label>Date</label><input type="date" id="incDate"></div>
+<div><label>Time</label><input type="time" id="incTime"></div><div><label>Location</label><input id="incLocation"></div>
+<div><label>Company / Subcontractor</label><input id="incCompany"></div>
+<div><label>Incident Type</label><select id="incType"><option>Near Miss</option><option>First Aid Case</option><option>Property Damage</option><option>Unsafe Act / Condition</option><option>Environmental Incident</option><option>Other</option></select></div>
+<div><label>Person Involved</label><input id="incPerson"></div>
+<div><label>Status</label><select id="incStatus"><option>Open</option><option>Closed</option></select></div>
+<div class="full"><label>Description</label><textarea id="incDescription"></textarea></div>
+<div class="full"><label>Immediate Action</label><textarea id="incImmediate"></textarea></div>
+<div class="full"><label>Root Cause</label><textarea id="incRoot"></textarea></div>
+<div class="full"><label>Corrective / Preventive Action</label><textarea id="incCorrective"></textarea></div>
+<div><label>Incident Photo</label><input type="file" id="incPhotoFile" accept="image/*" onchange="readIncidentPhoto(this)"><img id="incPhotoPreview" class="preview"></div>
+</div><p><button class="green" onclick="saveIncident()">💾 Save Incident</button><button class="grey" onclick="clearIncident()">Clear Form</button></p>
+</div><div class="panel"><h2>📋 Saved Incident / Near Miss Records</h2><div id="incidentRecords"></div></div></section><section id="baPage" style="display:none">
 <button class="blue" onclick="backBA()">← Back to Dashboard</button>
 <div class="panel"><h2 id="baTitle">📷 Before / After Rectification</h2>
 <input type="hidden" id="baEditId">
@@ -168,6 +184,18 @@ function toggle(id){let a=data(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].
 function del(id){if(!confirm("Delete this record?"))return;localStorage.setItem(key(),JSON.stringify(data().filter(x=>x.id!==id)));loadRecords()}
 function clearForm(){$("editId").value="";$("recordNo").value=nextNo();$("date").value=new Date().toISOString().split("T")[0];["person","location","company","finding","action","targetDate"].forEach(x=>$(x).value="");$("category").value="PPE";$("status").value="Open";$("beforeFile").value="";$("afterFile").value="";beforePhoto="";afterPhoto="";show("beforePreview","");show("afterPreview","")}
 
+let incidentPhoto="";
+function incKey(){return "safety360_"+currentSite+"_incident"}function incData(){try{return JSON.parse(localStorage.getItem(incKey())||"[]")}catch(e){return[]}}
+function nextInc(){let max=0;incData().forEach(x=>{let m=(x.no||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-INC-"+String(max+1).padStart(3,"0")}
+function openIncident(){$("dashboard").style.display="none";$("incidentPage").style.display="block";$("incidentTitle").textContent="🚨 "+currentSite+" Incident / Near Miss";clearIncident();loadIncident();scrollTo(0,0)}
+function backIncident(){$("incidentPage").style.display="none";$("dashboard").style.display="block";scrollTo(0,0)}
+function readIncidentPhoto(input){if(!input.files[0])return;let r=new FileReader();r.onload=e=>{incidentPhoto=e.target.result;show("incPhotoPreview",incidentPhoto)};r.readAsDataURL(input.files[0])}
+function clearIncident(){$("incEditId").value="";$("incNo").value=nextInc();$("incDate").value=new Date().toISOString().split("T")[0];["incTime","incLocation","incCompany","incPerson","incDescription","incImmediate","incRoot","incCorrective"].forEach(x=>$(x).value="");$("incType").value="Near Miss";$("incStatus").value="Open";$("incPhotoFile").value="";incidentPhoto="";show("incPhotoPreview","")}
+function saveIncident(){if(!$("incDescription").value.trim()){alert("Please enter incident description.");return}let a=incData(),eid=$("incEditId").value,r={id:eid?+eid:Date.now(),no:$("incNo").value,date:$("incDate").value,time:$("incTime").value,location:$("incLocation").value,company:$("incCompany").value,type:$("incType").value,person:$("incPerson").value,status:$("incStatus").value,description:$("incDescription").value.trim(),immediate:$("incImmediate").value,root:$("incRoot").value,corrective:$("incCorrective").value,photo:incidentPhoto};if(eid){let n=a.findIndex(x=>x.id===+eid);if(n>=0)a[n]=r}else a.unshift(r);try{localStorage.setItem(incKey(),JSON.stringify(a));alert(eid?"Incident updated successfully.":"Incident saved successfully.");clearIncident();loadIncident()}catch(e){alert("Storage is full. Use a smaller photo or delete old records.")}}
+function loadIncident(){let a=incData();$("incidentRecords").innerHTML=a.length?a.map(r=>`<div class="record ${r.status==="Closed"?"closed":""}"><div class="top"><span class="num">${safe(r.no)}</span><span class="badge">${safe(r.type)} / ${safe(r.status)}</span></div><p><b>Date / Time:</b> ${safe(r.date)} ${safe(r.time)}</p><p><b>Location:</b> ${safe(r.location)}</p><p><b>Company:</b> ${safe(r.company)}</p><p><b>Person Involved:</b> ${safe(r.person)}</p><p><b>Description:</b> ${safe(r.description)}</p><p><b>Immediate Action:</b> ${safe(r.immediate)}</p><p><b>Root Cause:</b> ${safe(r.root)}</p><p><b>Corrective / Preventive Action:</b> ${safe(r.corrective)}</p>${r.photo?`<p><b>Incident Photo</b></p><img src="${r.photo}" style="max-width:280px;max-height:230px;border-radius:8px">`:""}<p><button class="orange" onclick="editIncident(${r.id})">✏️ Edit</button><button class="green" onclick="toggleIncident(${r.id})">${r.status==="Closed"?"↩ Reopen":"✓ Close"}</button><button class="red" onclick="deleteIncident(${r.id})">🗑 Delete</button></p></div>`).join(""):"<p>No incident records saved yet.</p>"}
+function editIncident(id){let r=incData().find(x=>x.id===id);if(!r)return;$("incEditId").value=r.id;$("incNo").value=r.no;$("incDate").value=r.date;$("incTime").value=r.time||"";$("incLocation").value=r.location||"";$("incCompany").value=r.company||"";$("incType").value=r.type||"Other";$("incPerson").value=r.person||"";$("incStatus").value=r.status||"Open";$("incDescription").value=r.description||"";$("incImmediate").value=r.immediate||"";$("incRoot").value=r.root||"";$("incCorrective").value=r.corrective||"";incidentPhoto=r.photo||"";show("incPhotoPreview",incidentPhoto);scrollTo({top:0,behavior:"smooth"})}
+function toggleIncident(id){let a=incData(),n=a.findIndex(x=>x.id===id);if(n<0)return;a[n].status=a[n].status==="Closed"?"Open":"Closed";localStorage.setItem(incKey(),JSON.stringify(a));loadIncident()}
+function deleteIncident(id){if(!confirm("Delete this incident record?"))return;localStorage.setItem(incKey(),JSON.stringify(incData().filter(x=>x.id!==id)));loadIncident()}
 let baBefore="",baAfter="";
 function baKey(){return "safety360_"+currentSite+"_beforeafter"}function baData(){try{return JSON.parse(localStorage.getItem(baKey())||"[]")}catch(e){return[]}}
 function nextBA(){let max=0;baData().forEach(x=>{let m=(x.no||"").match(/(\d+)$/);if(m)max=Math.max(max,+m[1])});return currentSite+"-REC-"+String(max+1).padStart(3,"0")}
