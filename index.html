@@ -18,6 +18,11 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 .record{background:#f8fafc;border-left:5px solid #dc2626;padding:15px;margin:14px 0;border-radius:8px}.record.closed{border-left-color:#16a34a}
 .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.num{font-weight:bold;color:#123b5d}.badge{font-weight:bold}.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.photos img{width:100%;max-height:220px;object-fit:contain}
 @media(max-width:700px){.grid,.menu-grid,.form-grid,.photos{grid-template-columns:1fr}.full{grid-column:auto}}
+
+.login-wrap{max-width:430px;margin:45px auto;background:#fff;padding:28px;border-radius:15px;box-shadow:0 4px 14px #00000016}
+.login-wrap h2{text-align:center;color:#123b5d}.login-msg{text-align:center;font-weight:bold;margin-top:10px}
+.userbar{display:none;background:#eaf0f5;padding:10px 16px;border-radius:10px;margin-bottom:16px;align-items:center;justify-content:space-between}
+.sync-status{font-size:13px;color:#475569}
 </style>
 <style id="reportStyles">
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.summary-card{background:#f8fafc;border-radius:12px;padding:18px;text-align:center;border:1px solid #e2e8f0}.summary-card strong{display:block;font-size:28px;color:#123b5d;margin-top:7px}.report-table{width:100%;border-collapse:collapse;margin:12px 0 25px}.report-table th,.report-table td{border:1px solid #cbd5e1;padding:8px;text-align:left}.report-table th{background:#eaf0f5}.report-section h3{color:#123b5d}@media(max-width:700px){.summary-grid{grid-template-columns:1fr}}@media print{header,footer,.no-print{display:none!important}body{background:white}.container{max-width:none;padding:0}.panel{box-shadow:none}.report-table{font-size:11px}}
@@ -25,7 +30,16 @@ label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{wid
 <body>
 <header><h1>🦺 SITE SAFETY 360</h1><p>SHINKHAI CONSTRUCTION PTE LTD</p></header>
 <div class="container">
-<section id="home"><div class="title"><h2>Safety Management System</h2><p>Select Project Site</p></div>
+<section id="loginPage"><div class="login-wrap">
+<h2>🔐 Site Safety 360 Login</h2><p style="text-align:center">SHINKHAI CONSTRUCTION PTE LTD</p>
+<label>Email</label><input type="email" id="loginEmail" placeholder="Enter email"><br><br>
+<label>Password</label><input type="password" id="loginPassword" placeholder="Enter password">
+<p><button class="blue" style="width:100%" onclick="loginUser()">Login</button></p>
+<div id="loginMsg" class="login-msg"></div></div></section>
+<div id="userBar" class="userbar"><div><b id="userEmail"></b><br><span id="syncStatus" class="sync-status">Cloud ready</span></div>
+<button class="red" onclick="logoutUser()">Logout</button></div>
+
+<section id="home" style="display:none"><div class="title"><h2>Safety Management System</h2><p>Select Project Site</p></div>
 <div class="grid"><div class="site"><h2>PR2</h2><p>Project Safety Management</p><button class="orange" onclick="openSite('PR2')">ENTER PR2</button></div>
 <div class="site"><h2>PR3</h2><p>Project Safety Management</p><button class="orange" onclick="openSite('PR3')">ENTER PR3</button></div></div></section>
 
@@ -275,4 +289,52 @@ function deletePTW(id){if(!confirm("Delete this PTW record?"))return;localStorag
 
 function safe(v){let d=document.createElement("div");d.textContent=v||"-";return d.innerHTML}
 </script>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getFirestore,collection,doc,getDocs,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+/* IMPORTANT: Paste the exact firebaseConfig shown in Firebase Console here. */
+const firebaseConfig = {
+  apiKey: "AIzaSyCntQifG3qmU2NvAN_pRB7Cghqd7qslplQ",
+  authDomain: "site-safety-360.firebaseapp.com",
+  projectId: "site-safety-360",
+  storageBucket: "site-safety-360.firebasestorage.app",
+  messagingSenderId: "1054257931489",
+  appId: "1:1054257931489:web:0807b9103b3111c5e1c3a0",
+  measurementId: "G-WBX3ZFZZDH"
+};
+
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+let timer=null,last="";
+const E=id=>document.getElementById(id);
+const status=t=>{if(E("syncStatus"))E("syncStatus").textContent=t};
+
+window.loginUser=async()=>{
+ const email=E("loginEmail").value.trim(), password=E("loginPassword").value;
+ E("loginMsg").textContent="Signing in...";
+ try{await signInWithEmailAndPassword(auth,email,password);E("loginMsg").textContent=""}
+ catch(e){E("loginMsg").textContent="Login failed. Check email/password."}
+};
+window.logoutUser=()=>signOut(auth);
+
+const enc=s=>btoa(unescape(encodeURIComponent(s))).replace(/[+/=]/g,"_");
+function localData(){let o={};for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i);if(k&&k.startsWith("safety360_"))o[k]=localStorage.getItem(k)}return o}
+async function pull(u){status("Loading cloud data...");let q=await getDocs(collection(db,"users",u.uid,"safety360"));q.forEach(d=>{let x=d.data();if(x.key&&typeof x.value==="string")localStorage.setItem(x.key,x.value)});status("Cloud loaded ✓")}
+async function push(u){let o=localData(),s=JSON.stringify(o);if(s===last)return;status("Syncing...");try{for(const [k,v] of Object.entries(o))await setDoc(doc(db,"users",u.uid,"safety360",enc(k)),{key:k,value:v,updatedAt:serverTimestamp()},{merge:true});last=s;status("Cloud synced ✓")}catch(e){console.error(e);status("Sync error")}}
+
+onAuthStateChanged(auth,async u=>{
+ if(timer){clearInterval(timer);timer=null}
+ if(u){
+   E("loginPage").style.display="none";E("userBar").style.display="flex";E("userEmail").textContent=u.email||"Signed in";
+   try{await pull(u)}catch(e){console.error(e);status("Cloud load error")}
+   E("home").style.display="block";last=JSON.stringify(localData());timer=setInterval(()=>push(u),2000);
+ }else{
+   E("loginPage").style.display="block";E("userBar").style.display="none";E("home").style.display="none";
+   ["dashboard","modulePage","reportPage","incidentPage","baPage","trainingPage","eqPage","tbmPage","ptwPage"].forEach(id=>{let x=E(id);if(x)x.style.display="none"});
+ }
+});
+</script>
+
 </body></html>
